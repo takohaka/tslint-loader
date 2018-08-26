@@ -13,6 +13,7 @@ var mkdirp = require('mkdirp');
 var rimraf = require('rimraf');
 var objectAssign = require('object-assign');
 var semver = require('semver');
+var vueParser = require('vue-parser');
 
 function resolveFile(configPath) {
   return path.isAbsolute(configPath)
@@ -137,7 +138,12 @@ module.exports = function(input, map) {
   }
 
   var options = resolveOptions(this);
-  lint(this, input, options);
+  if (/<script.*lang="ts".*>([\s|\S]*)<\/script>/.test(input)) {
+    var _input = vueParser.parse(input, 'script', { lang: ['ts', 'tsx'] });
+    lint(this, _input, options);
+  } else {
+    lint(this, input, options);
+  }
   callback(null, input, map);
 };
 
